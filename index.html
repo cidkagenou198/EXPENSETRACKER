@@ -4,27 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Budget Tracker & Currency Converter</title>
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: "Poppins", sans-serif;
       background: #f2f4f8;
       color: #333;
       padding: 20px;
-      animation: fadeInPage 1s ease-in-out;
+      animation: fadeInPage 0.8s ease-in-out;
     }
-    @keyframes fadeInPage {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
+    @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
     .container {
       max-width: 700px;
       margin: 0 auto;
@@ -32,17 +24,11 @@
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-      animation: slideUp 0.8s ease-out;
+      animation: slideUp 0.7s ease-out;
     }
-    @keyframes slideUp {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    h1, h2 {
-      font-family: "Montserrat", sans-serif;
-      text-align: center;
-      margin-bottom: 20px;
-    }
+    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    h1, h2 { font-family: "Montserrat", sans-serif; text-align: center; margin-bottom: 20px; }
+    form { display: flex; flex-wrap: wrap; gap: 10px; }
     form input, form button, #converter select, #converter button {
       flex: 1 1 200px;
       padding: 12px;
@@ -61,12 +47,9 @@
       color: #fff;
       border: none;
       cursor: pointer;
-      transition: transform 0.2s ease-in-out;
+      transition: background 0.3s ease;
     }
-    form button:hover, #converter button:hover {
-      background: linear-gradient(135deg, #0056b3, #00429d);
-      transform: scale(1.05);
-    }
+    form button:hover, #converter button:hover { background: linear-gradient(135deg, #0056b3, #00429d); }
     .expense-item {
       display: flex;
       justify-content: space-between;
@@ -76,12 +59,9 @@
       margin-bottom: 12px;
       border-radius: 6px;
       border-left: 5px solid #007bff;
-      opacity: 0;
       animation: fadeIn 0.6s forwards;
     }
-    @keyframes fadeIn {
-      to { opacity: 1; }
-    }
+    @keyframes fadeIn { to { opacity: 1; } }
     .expense-actions button {
       margin-left: 6px;
       padding: 6px 12px;
@@ -89,19 +69,11 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease-in-out;
+      transition: transform 0.2s ease-in-out;
     }
-    .expense-actions button:hover {
-      transform: scale(1.1);
-    }
-    .expense-actions button:first-child {
-      background: #28a745;
-      color: #fff;
-    }
-    .expense-actions button:last-child {
-      background: #dc3545;
-      color: #fff;
-    }
+    .expense-actions button:hover { transform: scale(1.1); }
+    .expense-actions button:first-child { background: #28a745; color: #fff; }
+    .expense-actions button:last-child { background: #dc3545; color: #fff; }
     #conversion-result {
       margin-top: 10px;
       text-align: center;
@@ -109,9 +81,8 @@
       color: #007bff;
       animation: fadeIn 0.6s ease-in-out;
     }
-    @media (max-width: 600px) {
-      form { flex-direction: column; }
-    }
+    #expense-list { list-style: none; padding: 0; }
+    @media (max-width: 600px) { form { flex-direction: column; } form input, form button { width: 100%; } }
   </style>
 </head>
 <body>
@@ -139,5 +110,49 @@
     <h2>Spending Insights</h2>
     <div id="insights"></div>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("expense-form");
+      const expenseList = document.getElementById("expense-list");
+      let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+
+      function renderExpenses() {
+        expenseList.innerHTML = "";
+        expenses.forEach((expense, index) => {
+          const li = document.createElement("li");
+          li.classList.add("expense-item");
+          li.innerHTML = `
+            <span>${expense.description} - $${expense.amount} (${expense.category})</span>
+            <div class="expense-actions">
+              <button onclick="deleteExpense(${index})">❌</button>
+            </div>
+          `;
+          expenseList.appendChild(li);
+        });
+        localStorage.setItem("expenses", JSON.stringify(expenses));
+      }
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const description = document.getElementById("description").value.trim();
+        const amount = parseFloat(document.getElementById("amount").value);
+        const category = document.getElementById("category").value.trim();
+        
+        if (description && !isNaN(amount) && category) {
+          expenses.push({ description, amount, category });
+          renderExpenses();
+          form.reset();
+        }
+      });
+
+      window.deleteExpense = (index) => {
+        expenses.splice(index, 1);
+        renderExpenses();
+      };
+
+      renderExpenses();
+    });
+  </script>
 </body>
 </html>
