@@ -4,11 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Budget Tracker & Currency Converter</title>
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
     body {
       font-family: "Poppins", sans-serif;
       background: #f2f4f8;
@@ -16,7 +21,10 @@
       padding: 20px;
       animation: fadeInPage 0.8s ease-in-out;
     }
-    @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeInPage {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
     .container {
       max-width: 700px;
       margin: 0 auto;
@@ -26,9 +34,20 @@
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
       animation: slideUp 0.7s ease-out;
     }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    h1, h2 { font-family: "Montserrat", sans-serif; text-align: center; margin-bottom: 20px; }
-    form { display: flex; flex-wrap: wrap; gap: 10px; }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    h1, h2 {
+      font-family: "Montserrat", sans-serif;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
     form input, form button, #converter select, #converter button {
       flex: 1 1 200px;
       padding: 12px;
@@ -47,9 +66,12 @@
       color: #fff;
       border: none;
       cursor: pointer;
-      transition: background 0.3s ease;
+      transition: transform 0.2s ease-in-out;
     }
-    form button:hover, #converter button:hover { background: linear-gradient(135deg, #0056b3, #00429d); }
+    form button:hover, #converter button:hover {
+      background: linear-gradient(135deg, #0056b3, #00429d);
+      transform: scale(1.05);
+    }
     .expense-item {
       display: flex;
       justify-content: space-between;
@@ -59,21 +81,12 @@
       margin-bottom: 12px;
       border-radius: 6px;
       border-left: 5px solid #007bff;
+      opacity: 0;
       animation: fadeIn 0.6s forwards;
     }
-    @keyframes fadeIn { to { opacity: 1; } }
-    .expense-actions button {
-      margin-left: 6px;
-      padding: 6px 12px;
-      font-size: 0.9em;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: transform 0.2s ease-in-out;
+    @keyframes fadeIn {
+      to { opacity: 1; }
     }
-    .expense-actions button:hover { transform: scale(1.1); }
-    .expense-actions button:first-child { background: #28a745; color: #fff; }
-    .expense-actions button:last-child { background: #dc3545; color: #fff; }
     #conversion-result {
       margin-top: 10px;
       text-align: center;
@@ -81,8 +94,18 @@
       color: #007bff;
       animation: fadeIn 0.6s ease-in-out;
     }
-    #expense-list { list-style: none; padding: 0; }
-    @media (max-width: 600px) { form { flex-direction: column; } form input, form button { width: 100%; } }
+    #expense-list {
+      list-style: none;
+      padding: 0;
+    }
+    @media (max-width: 600px) {
+      form {
+        flex-direction: column;
+      }
+      form input, form button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -94,6 +117,9 @@
       <input type="text" id="category" placeholder="Category (e.g., Food, Transport)" required />
       <button type="submit">Add Expense</button>
     </form>
+    <h2>Expenses</h2>
+    <ul id="expense-list"></ul>
+
     <div id="converter">
       <h2>Convert Total Spending</h2>
       <select id="target-currency">
@@ -105,53 +131,70 @@
       <button id="convert-btn">Convert</button>
       <div id="conversion-result"></div>
     </div>
-    <h2>Expenses</h2>
-    <ul id="expense-list"></ul>
-    <h2>Spending Insights</h2>
-    <div id="insights"></div>
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const form = document.getElementById("expense-form");
-      const expenseList = document.getElementById("expense-list");
-      let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+    let expenses = [];
 
-      function renderExpenses() {
-        expenseList.innerHTML = "";
-        expenses.forEach((expense, index) => {
-          const li = document.createElement("li");
-          li.classList.add("expense-item");
-          li.innerHTML = `
-            <span>${expense.description} - $${expense.amount} (${expense.category})</span>
-            <div class="expense-actions">
-              <button onclick="deleteExpense(${index})">❌</button>
-            </div>
-          `;
-          expenseList.appendChild(li);
-        });
-        localStorage.setItem("expenses", JSON.stringify(expenses));
+    document.getElementById("expense-form").addEventListener("submit", function(event) {
+      event.preventDefault();
+
+      const description = document.getElementById("description").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      const category = document.getElementById("category").value;
+
+      if (!description || isNaN(amount) || !category) {
+        alert("Please fill out all fields correctly.");
+        return;
       }
 
-      form.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const description = document.getElementById("description").value.trim();
-        const amount = parseFloat(document.getElementById("amount").value);
-        const category = document.getElementById("category").value.trim();
-        
-        if (description && !isNaN(amount) && category) {
-          expenses.push({ description, amount, category });
-          renderExpenses();
-          form.reset();
-        }
+      const expense = { description, amount, category };
+      expenses.push(expense);
+
+      updateExpenseList();
+      document.getElementById("expense-form").reset();
+    });
+
+    function updateExpenseList() {
+      const list = document.getElementById("expense-list");
+      list.innerHTML = "";
+
+      expenses.forEach((expense, index) => {
+        const item = document.createElement("li");
+        item.classList.add("expense-item");
+        item.innerHTML = `
+          <span>${expense.description} - $${expense.amount.toFixed(2)} (${expense.category})</span>
+          <button onclick="removeExpense(${index})">❌</button>
+        `;
+        list.appendChild(item);
       });
+    }
 
-      window.deleteExpense = (index) => {
-        expenses.splice(index, 1);
-        renderExpenses();
-      };
+    function removeExpense(index) {
+      expenses.splice(index, 1);
+      updateExpenseList();
+    }
 
-      renderExpenses();
+    document.getElementById("convert-btn").addEventListener("click", async () => {
+      const targetCurrency = document.getElementById("target-currency").value;
+      const apiKey = "fca_live_1waQoDIbJULd8m28bI8Bym2nvIN8K0P3LwclAyrV";
+      const url = `https://api.freecurrencyapi.com/v1/latest?apikey=${apiKey}&base_currency=USD`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const rate = data.data[targetCurrency];
+
+        if (rate) {
+          const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+          const convertedAmount = (totalSpent * rate).toFixed(2);
+          document.getElementById("conversion-result").textContent = `Total in ${targetCurrency}: ${convertedAmount} ${targetCurrency}`;
+        } else {
+          document.getElementById("conversion-result").textContent = "Error fetching rates.";
+        }
+      } catch (error) {
+        document.getElementById("conversion-result").textContent = "Failed to fetch exchange rates.";
+      }
     });
   </script>
 </body>
