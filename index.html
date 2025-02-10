@@ -98,6 +98,25 @@
       list-style: none;
       padding: 0;
     }
+    #weather-result {
+      margin-top: 10px;
+      font-size: 1.2em;
+      color: #333;
+      text-align: center;
+      animation: fadeInWeather 1s ease-in-out;
+    }
+    @keyframes fadeInWeather {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .rainy {
+      color: #007bff;
+      font-weight: bold;
+    }
+    .clear {
+      color: #f39c12;
+      font-weight: bold;
+    }
     @media (max-width: 600px) {
       form {
         flex-direction: column;
@@ -131,11 +150,20 @@
       <button id="convert-btn">Convert</button>
       <div id="conversion-result"></div>
     </div>
+
+    <!-- Weather Section -->
+    <div id="weather">
+      <h2>Check Weather</h2>
+      <input type="text" id="city" placeholder="Enter City" />
+      <button id="weather-btn">Get Weather</button>
+      <div id="weather-result"></div>
+    </div>
   </div>
 
   <script>
     let expenses = [];
 
+    // Expense Form
     document.getElementById("expense-form").addEventListener("submit", function(event) {
       event.preventDefault();
 
@@ -155,6 +183,7 @@
       document.getElementById("expense-form").reset();
     });
 
+    // Update Expense List
     function updateExpenseList() {
       const list = document.getElementById("expense-list");
       list.innerHTML = "";
@@ -170,11 +199,13 @@
       });
     }
 
+    // Remove Expense
     function removeExpense(index) {
       expenses.splice(index, 1);
       updateExpenseList();
     }
 
+    // Currency Conversion
     document.getElementById("convert-btn").addEventListener("click", async () => {
       const targetCurrency = document.getElementById("target-currency").value;
       const apiKey = "fca_live_1waQoDIbJULd8m28bI8Bym2nvIN8K0P3LwclAyrV";
@@ -194,6 +225,34 @@
         }
       } catch (error) {
         document.getElementById("conversion-result").textContent = "Failed to fetch exchange rates.";
+      }
+    });
+
+    // Weather API Integration (OpenWeatherMap)
+    document.getElementById("weather-btn").addEventListener("click", async () => {
+      const city = document.getElementById("city").value;
+      const apiKey = "22ad605c97936b8aec7ca420e8437a76";  // Your OpenWeatherMap API key
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.cod === 200) {
+          const weather = data.weather[0].description;
+          const temp = data.main.temp;
+          const weatherResult = document.getElementById("weather-result");
+
+          // Show weather with animation
+          weatherResult.classList.remove("rainy", "clear");  // Remove previous classes
+          weatherResult.classList.add(weather.includes("rain") ? "rainy" : "clear");
+
+          weatherResult.textContent = `Weather in ${city}: ${weather}, Temperature: ${temp}°C`;
+        } else {
+          document.getElementById("weather-result").textContent = "City not found!";
+        }
+      } catch (error) {
+        document.getElementById("weather-result").textContent = "Failed to fetch weather data.";
       }
     });
   </script>
